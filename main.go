@@ -47,7 +47,7 @@ func main() {
 	}
 
 	if len(opts.Args.Directory) == 0 {
-		warn("No paths specified.\n\n")
+		warn("No paths specified.")
 	}
 	paths := make([]string, 0)
 	for _, d := range opts.Args.Directory {
