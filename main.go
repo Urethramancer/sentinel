@@ -101,7 +101,7 @@ func main() {
 					if opts.Commands.CreateAction != "" {
 						cmd, _ := filepath.Abs(opts.Commands.CreateAction)
 						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd)
+						res := exec.Command(cmd, event.Name)
 						res.Run()
 					}
 					done <- true
@@ -110,7 +110,7 @@ func main() {
 					if opts.Commands.WriteAction != "" {
 						cmd, _ := filepath.Abs(opts.Commands.WriteAction)
 						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd)
+						res := exec.Command(cmd, event.Name)
 						res.Run()
 					}
 					done <- true
@@ -119,7 +119,7 @@ func main() {
 					if opts.Commands.DeleteAction != "" {
 						cmd, _ := filepath.Abs(opts.Commands.DeleteAction)
 						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd)
+						res := exec.Command(cmd, event.Name)
 						res.Run()
 					}
 					done <- true
@@ -128,7 +128,7 @@ func main() {
 					if opts.Commands.RenameAction != "" {
 						cmd, _ := filepath.Abs(opts.Commands.RenameAction)
 						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd)
+						res := exec.Command(cmd, event.Name)
 						res.Run()
 					}
 					done <- true
@@ -137,7 +137,7 @@ func main() {
 					if opts.Commands.ChmodAction != "" {
 						cmd, _ := filepath.Abs(opts.Commands.ChmodAction)
 						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd)
+						res := exec.Command(cmd, event.Name)
 						res.Run()
 					}
 					done <- true
