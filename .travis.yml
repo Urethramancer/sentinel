@@ -3,3 +3,7 @@ language: go
 go:
   - 1.7
   - tip
+
+install:
+  - go get github.com/fsnotify/fsnotify
+  - go get github.com/jessevdk/go-flags
