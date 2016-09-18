@@ -1,7 +1,7 @@
-# Sentinel
+# Sentinel [![Build Status](https://travis-ci.org/Urethramancer/sentinel.svg)](https://travis-ci.org/Urethramancer/sentinel)
 This command-line tool watches one or more directories for files being created, renamed, modified or deleted, then optionally runs a script. It uses the directory change APIs of Linux, macOS and Windows, respectively, thanks to the fsnotify package.
 
-## Requirements
+## Dependencies
 1. Go version 1.7 or later.
 2. [fsnotify](https://github.com/fsnotify/fsnotify)
 3. [go-flags](https://github.com/jessevdk/go-flags)
@@ -12,13 +12,17 @@ Clone the repository and use "go build", and any ldflags etc. you prefer.
 ## Usage
 In its simplest use, Sentinel merely watches a directory until an expected type of change occurs, then returns:
 
-`sentinel -c /tmp`
+```sh
+sentinel -c /tmp
+```
 
 The above example waits for a file to be created in /tmp, then exits.
 
 You can also tell it to run a simple shell script:
 
-`sentinel -c -C /usr/local/bin/watcher.sh /tmp`
+```sh
+sentinel -c -C /usr/local/bin/watcher.sh /tmp
+```
 
 This script will be given the watched path where the file activity occurred as its first argument.
 
