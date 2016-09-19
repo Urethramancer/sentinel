@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	PROGRAMNAME = "Sentinel"
-	VERSION     = "0.1.1"
+	program = "Sentinel"
+	version = "0.1.2"
 )
 
 var opts struct {
@@ -42,14 +42,14 @@ func main() {
 	}
 
 	if opts.Version {
-		pr("%s %s\n", PROGRAMNAME, VERSION)
+		pr("%s %s\n", program, version)
 		return
 	}
 
 	if len(opts.Args.Directory) == 0 {
 		warn("No paths specified.")
 	}
-	paths := make([]string, 0)
+	var paths []string
 	for _, d := range opts.Args.Directory {
 		x, _ := filepath.Abs(d)
 		if !exists(x) {
@@ -59,7 +59,7 @@ func main() {
 	}
 
 	// Default: Watch for any changes
-	var flags fsnotify.Op = 0
+	var flags fsnotify.Op
 
 	if opts.Flags.Create {
 		v("Watching for creation.\n")
