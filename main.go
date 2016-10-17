@@ -11,6 +11,8 @@ import (
 const (
 	program = "Sentinel"
 	version = "0.1.2"
+	ACTION  = "SENTINEL_ACTION"
+	PATH    = "SENTINEL_PATH"
 )
 
 var opts struct {
