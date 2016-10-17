@@ -4,6 +4,11 @@ go:
   - 1.7
   - tip
 
+cache:
+  directories:
+    - $GOPATH/src
+    - $GOPATH/pkg
+
 install:
   - go get github.com/fsnotify/fsnotify
   - go get github.com/jessevdk/go-flags
