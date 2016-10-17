@@ -24,7 +24,7 @@ You can also tell it to run a simple shell script:
 sentinel -c -C /usr/local/bin/watcher.sh /tmp
 ```
 
-This script will be given the watched path where the file activity occurred as its first argument.
+This script will be given two variables, **SENTINEL_ACTION** and **SENTINEL_PATH**, to indicate what happened and to what.
 
 Any non-flag arguments found are taken as directories to watch, and any number you need is allowed. Multiple instances of Sentinel are required if you wish to run different scripts per folder.
 
