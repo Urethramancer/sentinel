@@ -11,9 +11,11 @@ import (
 
 const (
 	program = "Sentinel"
-	version = "0.1.2"
-	ACTION  = "SENTINEL_ACTION"
-	PATH    = "SENTINEL_PATH"
+	version = "0.3.0"
+	// ACTION is the environment variable for the type of notification triggered.
+	ACTION = "SENTINEL_ACTION"
+	// PATH is the environment variable for the type of notification triggered.
+	PATH = "SENTINEL_PATH"
 )
 
 var opts struct {
@@ -25,6 +27,7 @@ var opts struct {
 		Delete bool `short:"d" long:"delete" description:"Watch for file deletion."`
 		Rename bool `short:"r" long:"rename" description:"Watch for file renaming."`
 		Chmod  bool `short:"m" long:"chmod" description:"Watch for file attribute changes (date or permissions)."`
+		Loop   bool `short:"L" long:"loop" description:"Don't quit after each triggered event."`
 	} `group:"Flags"`
 	Commands struct {
 		CreateAction string `short:"C" long:"createaction" description:"Script to run when a file is created." value-name:"CMD"`
@@ -105,35 +108,45 @@ func main() {
 					os.Setenv(ACTION, "create")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.CreateAction)
-					done <- true
+					if !opts.Flags.Loop {
+						done <- true
+					}
 				}
 				if flags&event.Op&fsnotify.Write == fsnotify.Write && opts.Commands.WriteAction != "" {
 					v("Running '%s'\n", opts.Commands.WriteAction)
 					os.Setenv(ACTION, "write")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.WriteAction)
-					done <- true
+					if !opts.Flags.Loop {
+						done <- true
+					}
 				}
 				if flags&event.Op&fsnotify.Remove == fsnotify.Remove && opts.Commands.DeleteAction != "" {
 					v("Running '%s'\n", opts.Commands.DeleteAction)
 					os.Setenv(ACTION, "delete")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.DeleteAction)
-					done <- true
+					if !opts.Flags.Loop {
+						done <- true
+					}
 				}
 				if flags&event.Op&fsnotify.Rename == fsnotify.Rename && opts.Commands.RenameAction != "" {
 					v("Running '%s'\n", opts.Commands.RenameAction)
 					os.Setenv(ACTION, "rename")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.RenameAction)
-					done <- true
+					if !opts.Flags.Loop {
+						done <- true
+					}
 				}
 				if flags&event.Op&fsnotify.Chmod == fsnotify.Chmod && opts.Commands.ChmodAction != "" {
 					v("Running '%s'\n", opts.Commands.ChmodAction)
 					os.Setenv(ACTION, "chmod")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.ChmodAction)
-					done <- true
+					if !opts.Flags.Loop {
+						done <- true
+					}
 				}
 			case err := <-watcher.Errors:
 				if err.Error() != "" {
@@ -152,6 +165,7 @@ func main() {
 		}
 	}
 
+	// We'll never return from this without a break signal if in loop mode
 	<-done
 }
 
