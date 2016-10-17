@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -99,49 +100,39 @@ func main() {
 		for {
 			select {
 			case event := <-watcher.Events:
-				if flags&event.Op&fsnotify.Create == fsnotify.Create {
-					if opts.Commands.CreateAction != "" {
-						cmd, _ := filepath.Abs(opts.Commands.CreateAction)
-						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd, event.Name)
-						res.Run()
-					}
+				if flags&event.Op&fsnotify.Create == fsnotify.Create && opts.Commands.CreateAction != "" {
+					v("Running '%s'\n", opts.Commands.CreateAction)
+					os.Setenv(ACTION, "create")
+					os.Setenv(PATH, event.Name)
+					runCommand(opts.Commands.CreateAction)
 					done <- true
 				}
-				if flags&event.Op&fsnotify.Write == fsnotify.Write {
-					if opts.Commands.WriteAction != "" {
-						cmd, _ := filepath.Abs(opts.Commands.WriteAction)
-						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd, event.Name)
-						res.Run()
-					}
+				if flags&event.Op&fsnotify.Write == fsnotify.Write && opts.Commands.WriteAction != "" {
+					v("Running '%s'\n", opts.Commands.WriteAction)
+					os.Setenv(ACTION, "write")
+					os.Setenv(PATH, event.Name)
+					runCommand(opts.Commands.WriteAction)
 					done <- true
 				}
-				if flags&event.Op&fsnotify.Remove == fsnotify.Remove {
-					if opts.Commands.DeleteAction != "" {
-						cmd, _ := filepath.Abs(opts.Commands.DeleteAction)
-						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd, event.Name)
-						res.Run()
-					}
+				if flags&event.Op&fsnotify.Remove == fsnotify.Remove && opts.Commands.DeleteAction != "" {
+					v("Running '%s'\n", opts.Commands.DeleteAction)
+					os.Setenv(ACTION, "delete")
+					os.Setenv(PATH, event.Name)
+					runCommand(opts.Commands.DeleteAction)
 					done <- true
 				}
-				if flags&event.Op&fsnotify.Rename == fsnotify.Rename {
-					if opts.Commands.RenameAction != "" {
-						cmd, _ := filepath.Abs(opts.Commands.RenameAction)
-						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd, event.Name)
-						res.Run()
-					}
+				if flags&event.Op&fsnotify.Rename == fsnotify.Rename && opts.Commands.RenameAction != "" {
+					v("Running '%s'\n", opts.Commands.RenameAction)
+					os.Setenv(ACTION, "rename")
+					os.Setenv(PATH, event.Name)
+					runCommand(opts.Commands.RenameAction)
 					done <- true
 				}
-				if flags&event.Op&fsnotify.Chmod == fsnotify.Chmod {
-					if opts.Commands.ChmodAction != "" {
-						cmd, _ := filepath.Abs(opts.Commands.ChmodAction)
-						v("Running '%s'\n", cmd)
-						res := exec.Command(cmd, event.Name)
-						res.Run()
-					}
+				if flags&event.Op&fsnotify.Chmod == fsnotify.Chmod && opts.Commands.ChmodAction != "" {
+					v("Running '%s'\n", opts.Commands.ChmodAction)
+					os.Setenv(ACTION, "chmod")
+					os.Setenv(PATH, event.Name)
+					runCommand(opts.Commands.ChmodAction)
 					done <- true
 				}
 			case err := <-watcher.Errors:
@@ -162,4 +153,11 @@ func main() {
 	}
 
 	<-done
+}
+
+func runCommand(cmd string) {
+	err := exec.Command("bash", cmd).Run()
+	if err != nil {
+		v("Error: %s\n", err)
+	}
 }
