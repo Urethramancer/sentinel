@@ -24,11 +24,11 @@ var opts struct {
 		Chmod  bool `short:"m" long:"chmod" description:"Watch for file attribute changes (date or permissions)."`
 	} `group:"Flags"`
 	Commands struct {
-		CreateAction string `short:"C" long:"createaction" description:"Command to run when a file is created." value-name:"CMD"`
-		WriteAction  string `short:"W" long:"writeaction" description:"Command to run when a file is edited." value-name:"CMD"`
-		DeleteAction string `short:"D" long:"deleteaction" description:"Command to run when a file is deleted." value-name:"CMD"`
-		RenameAction string `short:"R" long:"renameaction" description:"Command to run when a file is renamed." value-name:"CMD"`
-		ChmodAction  string `short:"M" long:"chmodaction" description:"Command to run when a file's date or permissions change." value-name:"CMD"`
+		CreateAction string `short:"C" long:"createaction" description:"Script to run when a file is created." value-name:"CMD"`
+		WriteAction  string `short:"W" long:"writeaction" description:"Script to run when a file is edited." value-name:"CMD"`
+		DeleteAction string `short:"D" long:"deleteaction" description:"Script to run when a file is deleted." value-name:"CMD"`
+		RenameAction string `short:"R" long:"renameaction" description:"Script to run when a file is renamed." value-name:"CMD"`
+		ChmodAction  string `short:"M" long:"chmodaction" description:"Script to run when a file's date or permissions change." value-name:"CMD"`
 	} `group:"Commands"`
 	Args struct {
 		Directory []string `positional-arg-name:"PATH"`
