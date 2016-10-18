@@ -11,7 +11,7 @@ import (
 
 const (
 	program = "Sentinel"
-	version = "0.3.1"
+	version = "0.3.2"
 	// ACTION is the environment variable for the type of notification triggered.
 	ACTION = "SENTINEL_ACTION"
 	// PATH is the environment variable for the type of notification triggered.

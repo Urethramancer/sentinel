@@ -9,6 +9,9 @@ This command-line tool watches one or more directories for files being created, 
 ## Build
 Clone the repository and use "go build", and any ldflags etc. you prefer.
 
+## Platforms
+Tested on Linux and macOS. Should work on Windows without modification.
+
 ## Usage
 In its simplest use, Sentinel merely watches a directory until an expected type of change occurs, then returns:
 
