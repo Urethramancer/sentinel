@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/jessevdk/go-flags"
@@ -11,7 +10,7 @@ import (
 
 const (
 	program = "Sentinel"
-	version = "0.3.2"
+	version = "0.3.3"
 	// ACTION is the environment variable for the type of notification triggered.
 	ACTION = "SENTINEL_ACTION"
 	// PATH is the environment variable for the type of notification triggered.
@@ -57,11 +56,10 @@ func main() {
 	}
 	var paths []string
 	for _, d := range opts.Args.Directory {
-		x, _ := filepath.Abs(d)
-		if !exists(x) {
-			warn("Path %s does not exist.", x)
+		if !exists(d) {
+			warn("Path %s does not exist.", d)
 		}
-		paths = append(paths, x)
+		paths = append(paths, d)
 	}
 
 	// Default: Watch for any changes
