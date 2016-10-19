@@ -11,7 +11,7 @@ import (
 
 const (
 	program = "Sentinel"
-	version = "0.4.0"
+	version = "0.4.1"
 	// ACTION is the environment variable for the type of notification triggered.
 	ACTION = "SENTINEL_ACTION"
 	// PATH is the environment variable for the type of notification triggered.
@@ -180,9 +180,11 @@ func runCommand(script string) {
 		exit, ok := err.(*exec.ExitError)
 		if ok {
 			status, ok := exit.Sys().(syscall.WaitStatus)
-			if ok && status == 256 {
-				os.Exit(0)
-				v("Exit code: %d\n", status)
+			if ok {
+				if status == 256 || status == 512 {
+					os.Exit(0)
+					v("Exit code: %d\n", status)
+				}
 			}
 		} else {
 			v("Error: %s\n", err)
