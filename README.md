@@ -27,7 +27,13 @@ You can also tell it to run a simple shell script:
 sentinel -c -C /usr/local/bin/watcher.sh /tmp
 ```
 
-This script will be given two variables, **SENTINEL_ACTION** and **SENTINEL_PATH**, to indicate what happened and to what.
+Or to keep running it again:
+
+```sh
+sentinel -c -C /usr/local/bin/watcher.sh /tmp -L
+```
+
+The specified script(s) will be given two environment variables, **SENTINEL_ACTION** and **SENTINEL_PATH**, to indicate what happened and to what.
 
 The keyword in **SENTINEL_ACTION** will be **create**, **write**, **delete**, **rename** or **chmod**.
 
@@ -44,6 +50,8 @@ The supported types of events to watch for are as follows:
 
 ### Command parameters
 Each event flag has a corresponding uppercase version to specify a script to run when triggered. The first argument passed to this script will be the name of the directory where something happened.
+
+If you return exit code 1 from a script, Sentinel will quit even in loop mode.
 
 ### Other flags
 You can get a bit more output by passing the -v flag, or see the current version of Sentinel by passing -V.

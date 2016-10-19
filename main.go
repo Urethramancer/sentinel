@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/exec"
+	"syscall"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/jessevdk/go-flags"
@@ -10,7 +11,7 @@ import (
 
 const (
 	program = "Sentinel"
-	version = "0.3.3"
+	version = "0.4.0"
 	// ACTION is the environment variable for the type of notification triggered.
 	ACTION = "SENTINEL_ACTION"
 	// PATH is the environment variable for the type of notification triggered.
@@ -102,7 +103,7 @@ func main() {
 			select {
 			case event := <-watcher.Events:
 				if flags&event.Op&fsnotify.Create == fsnotify.Create && opts.Commands.CreateAction != "" {
-					v("Running '%s'\n", opts.Commands.CreateAction)
+					v("CREATE: Running '%s'\n", opts.Commands.CreateAction)
 					os.Setenv(ACTION, "create")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.CreateAction)
@@ -111,7 +112,7 @@ func main() {
 					}
 				}
 				if flags&event.Op&fsnotify.Write == fsnotify.Write && opts.Commands.WriteAction != "" {
-					v("Running '%s'\n", opts.Commands.WriteAction)
+					v("WRITE: Running '%s'\n", opts.Commands.WriteAction)
 					os.Setenv(ACTION, "write")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.WriteAction)
@@ -120,7 +121,7 @@ func main() {
 					}
 				}
 				if flags&event.Op&fsnotify.Remove == fsnotify.Remove && opts.Commands.DeleteAction != "" {
-					v("Running '%s'\n", opts.Commands.DeleteAction)
+					v("REMOVE: Running '%s'\n", opts.Commands.DeleteAction)
 					os.Setenv(ACTION, "delete")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.DeleteAction)
@@ -129,7 +130,7 @@ func main() {
 					}
 				}
 				if flags&event.Op&fsnotify.Rename == fsnotify.Rename && opts.Commands.RenameAction != "" {
-					v("Running '%s'\n", opts.Commands.RenameAction)
+					v("RENAME: Running '%s'\n", opts.Commands.RenameAction)
 					os.Setenv(ACTION, "rename")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.RenameAction)
@@ -138,7 +139,7 @@ func main() {
 					}
 				}
 				if flags&event.Op&fsnotify.Chmod == fsnotify.Chmod && opts.Commands.ChmodAction != "" {
-					v("Running '%s'\n", opts.Commands.ChmodAction)
+					v("CHMOD: Running '%s'\n", opts.Commands.ChmodAction)
 					os.Setenv(ACTION, "chmod")
 					os.Setenv(PATH, event.Name)
 					runCommand(opts.Commands.ChmodAction)
@@ -167,9 +168,25 @@ func main() {
 	<-done
 }
 
-func runCommand(cmd string) {
-	err := exec.Command("bash", cmd).Run()
+func runCommand(script string) {
+	cmd := exec.Command("bash", script)
+	err := cmd.Start()
 	if err != nil {
 		v("Error: %s\n", err)
 	}
+
+	err = cmd.Wait()
+	if err != nil {
+		exit, ok := err.(*exec.ExitError)
+		if ok {
+			status, ok := exit.Sys().(syscall.WaitStatus)
+			if ok && status == 256 {
+				os.Exit(0)
+				v("Exit code: %d\n", status)
+			}
+		} else {
+			v("Error: %s\n", err)
+		}
+	}
+
 }
