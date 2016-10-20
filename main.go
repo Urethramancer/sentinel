@@ -22,20 +22,23 @@ var opts struct {
 	Verbose bool `short:"v" long:"verbose" description:"Print more details during operation, otherwise remain quiet until an error occurs."`
 	Version bool `short:"V" long:"version" description:"Show program version and exit."`
 	Flags   struct {
-		Create bool `short:"c" long:"create" description:"Watch for file creation."`
-		Write  bool `short:"w" long:"write" description:"Watch for file editing."`
-		Delete bool `short:"d" long:"delete" description:"Watch for file deletion."`
-		Rename bool `short:"r" long:"rename" description:"Watch for file renaming."`
-		Chmod  bool `short:"m" long:"chmod" description:"Watch for file attribute changes (date or permissions)."`
-		Loop   bool `short:"L" long:"loop" description:"Don't quit after each triggered event."`
-	} `group:"Flags"`
+		Create bool `short:"c" long:"create" description:"Watch for new files."`
+		Write  bool `short:"w" long:"write" description:"Watch for changed files."`
+		Delete bool `short:"d" long:"delete" description:"Watch for deletion."`
+		Rename bool `short:"r" long:"rename" description:"Watch for renamed files."`
+		Chmod  bool `short:"m" long:"chmod" description:"Watch for attribute changes (date or permissions)."`
+	} `group:"Trigger flags"`
+	Other struct {
+		Loop bool `short:"L" long:"loop" description:"Don't quit after each triggered event."`
+	}
 	Commands struct {
-		CreateAction string `short:"C" long:"createaction" description:"Script to run when a file is created." value-name:"CMD"`
-		WriteAction  string `short:"W" long:"writeaction" description:"Script to run when a file is edited." value-name:"CMD"`
-		DeleteAction string `short:"D" long:"deleteaction" description:"Script to run when a file is deleted." value-name:"CMD"`
-		RenameAction string `short:"R" long:"renameaction" description:"Script to run when a file is renamed." value-name:"CMD"`
-		ChmodAction  string `short:"M" long:"chmodaction" description:"Script to run when a file's date or permissions change." value-name:"CMD"`
-	} `group:"Commands"`
+		CreateAction string `short:"C" long:"createaction" description:"Script to run when a file is created. Implies -c." value-name:"SCRIPT"`
+		WriteAction  string `short:"W" long:"writeaction" description:"Script to run when a file is edited. Implies -w." value-name:"SCRIPT"`
+		DeleteAction string `short:"D" long:"deleteaction" description:"Script to run when a file is deleted. Implies -d." value-name:"SCRIPT"`
+		RenameAction string `short:"R" long:"renameaction" description:"Script to run when a file is renamed. Implies -r." value-name:"SCRIPT"`
+		ChmodAction  string `short:"M" long:"chmodaction" description:"Script to run when a file's date or permissions change. Implies -m." value-name:"SCRIPT"`
+		ScriptAction string `short:"S" long:"scriptaction" description:"Script to run for all events. Requires any of the trigger flags. Overrides the other scripts." value-name:"SCRIPT"`
+	} `group:"Scripts"`
 	Args struct {
 		Directory []string `positional-arg-name:"PATH"`
 	} `positional-args:"yes"`
@@ -66,26 +69,41 @@ func main() {
 	// Default: Watch for any changes
 	var flags fsnotify.Op
 
+	if opts.Commands.CreateAction != "" {
+		opts.Flags.Create = true
+	}
 	if opts.Flags.Create {
 		v("Watching for creation.\n")
 		flags |= fsnotify.Create
 	}
 
+	if opts.Commands.WriteAction != "" {
+		opts.Flags.Write = true
+	}
 	if opts.Flags.Write {
 		v("Watching for write.\n")
 		flags |= fsnotify.Write
 	}
 
+	if opts.Commands.DeleteAction != "" {
+		opts.Flags.Delete = true
+	}
 	if opts.Flags.Delete {
 		v("Watching for delete.\n")
 		flags |= fsnotify.Remove
 	}
 
+	if opts.Commands.RenameAction != "" {
+		opts.Flags.Rename = true
+	}
 	if opts.Flags.Rename {
 		v("Watching for rename.\n")
 		flags |= fsnotify.Rename
 	}
 
+	if opts.Commands.ChmodAction != "" {
+		opts.Flags.Chmod = true
+	}
 	if opts.Flags.Chmod {
 		v("Watching for permission changes.\n")
 		flags |= fsnotify.Chmod
@@ -109,7 +127,7 @@ func main() {
 						os.Setenv(PATH, event.Name)
 						runCommand(opts.Commands.CreateAction)
 					}
-					if !opts.Flags.Loop {
+					if !opts.Other.Loop {
 						done <- true
 					}
 				}
@@ -120,7 +138,7 @@ func main() {
 						os.Setenv(PATH, event.Name)
 						runCommand(opts.Commands.WriteAction)
 					}
-					if !opts.Flags.Loop {
+					if !opts.Other.Loop {
 						done <- true
 					}
 				}
@@ -131,7 +149,7 @@ func main() {
 						os.Setenv(PATH, event.Name)
 						runCommand(opts.Commands.DeleteAction)
 					}
-					if !opts.Flags.Loop {
+					if !opts.Other.Loop {
 						done <- true
 					}
 				}
@@ -142,7 +160,7 @@ func main() {
 						os.Setenv(PATH, event.Name)
 						runCommand(opts.Commands.RenameAction)
 					}
-					if !opts.Flags.Loop {
+					if !opts.Other.Loop {
 						done <- true
 					}
 				}
@@ -153,7 +171,7 @@ func main() {
 						os.Setenv(PATH, event.Name)
 						runCommand(opts.Commands.ChmodAction)
 					}
-					if !opts.Flags.Loop {
+					if !opts.Other.Loop {
 						done <- true
 					}
 				}
