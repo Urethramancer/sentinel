@@ -11,7 +11,7 @@ import (
 
 const (
 	program = "Sentinel"
-	version = "0.4.1"
+	version = "0.4.2"
 	// ACTION is the environment variable for the type of notification triggered.
 	ACTION = "SENTINEL_ACTION"
 	// PATH is the environment variable for the type of notification triggered.
@@ -102,47 +102,57 @@ func main() {
 		for {
 			select {
 			case event := <-watcher.Events:
-				if flags&event.Op&fsnotify.Create == fsnotify.Create && opts.Commands.CreateAction != "" {
-					v("CREATE: Running '%s'\n", opts.Commands.CreateAction)
-					os.Setenv(ACTION, "create")
-					os.Setenv(PATH, event.Name)
-					runCommand(opts.Commands.CreateAction)
+				if flags&event.Op&fsnotify.Create == fsnotify.Create {
+					if opts.Commands.CreateAction != "" {
+						v("CREATE: Running '%s'\n", opts.Commands.CreateAction)
+						os.Setenv(ACTION, "create")
+						os.Setenv(PATH, event.Name)
+						runCommand(opts.Commands.CreateAction)
+					}
 					if !opts.Flags.Loop {
 						done <- true
 					}
 				}
-				if flags&event.Op&fsnotify.Write == fsnotify.Write && opts.Commands.WriteAction != "" {
-					v("WRITE: Running '%s'\n", opts.Commands.WriteAction)
-					os.Setenv(ACTION, "write")
-					os.Setenv(PATH, event.Name)
-					runCommand(opts.Commands.WriteAction)
+				if flags&event.Op&fsnotify.Write == fsnotify.Write {
+					if opts.Commands.WriteAction != "" {
+						v("WRITE: Running '%s'\n", opts.Commands.WriteAction)
+						os.Setenv(ACTION, "write")
+						os.Setenv(PATH, event.Name)
+						runCommand(opts.Commands.WriteAction)
+					}
 					if !opts.Flags.Loop {
 						done <- true
 					}
 				}
-				if flags&event.Op&fsnotify.Remove == fsnotify.Remove && opts.Commands.DeleteAction != "" {
-					v("REMOVE: Running '%s'\n", opts.Commands.DeleteAction)
-					os.Setenv(ACTION, "delete")
-					os.Setenv(PATH, event.Name)
-					runCommand(opts.Commands.DeleteAction)
+				if flags&event.Op&fsnotify.Remove == fsnotify.Remove {
+					if opts.Commands.DeleteAction != "" {
+						v("REMOVE: Running '%s'\n", opts.Commands.DeleteAction)
+						os.Setenv(ACTION, "delete")
+						os.Setenv(PATH, event.Name)
+						runCommand(opts.Commands.DeleteAction)
+					}
 					if !opts.Flags.Loop {
 						done <- true
 					}
 				}
-				if flags&event.Op&fsnotify.Rename == fsnotify.Rename && opts.Commands.RenameAction != "" {
-					v("RENAME: Running '%s'\n", opts.Commands.RenameAction)
-					os.Setenv(ACTION, "rename")
-					os.Setenv(PATH, event.Name)
-					runCommand(opts.Commands.RenameAction)
+				if flags&event.Op&fsnotify.Rename == fsnotify.Rename {
+					if opts.Commands.RenameAction != "" {
+						v("RENAME: Running '%s'\n", opts.Commands.RenameAction)
+						os.Setenv(ACTION, "rename")
+						os.Setenv(PATH, event.Name)
+						runCommand(opts.Commands.RenameAction)
+					}
 					if !opts.Flags.Loop {
 						done <- true
 					}
 				}
-				if flags&event.Op&fsnotify.Chmod == fsnotify.Chmod && opts.Commands.ChmodAction != "" {
-					v("CHMOD: Running '%s'\n", opts.Commands.ChmodAction)
-					os.Setenv(ACTION, "chmod")
-					os.Setenv(PATH, event.Name)
-					runCommand(opts.Commands.ChmodAction)
+				if flags&event.Op&fsnotify.Chmod == fsnotify.Chmod {
+					if opts.Commands.ChmodAction != "" {
+						v("CHMOD: Running '%s'\n", opts.Commands.ChmodAction)
+						os.Setenv(ACTION, "chmod")
+						os.Setenv(PATH, event.Name)
+						runCommand(opts.Commands.ChmodAction)
+					}
 					if !opts.Flags.Loop {
 						done <- true
 					}
