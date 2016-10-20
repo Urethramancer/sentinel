@@ -11,7 +11,7 @@ import (
 
 const (
 	program = "Sentinel"
-	version = "0.4.2"
+	version = "0.5.0"
 	// ACTION is the environment variable for the type of notification triggered.
 	ACTION = "SENTINEL_ACTION"
 	// PATH is the environment variable for the type of notification triggered.
@@ -107,6 +107,14 @@ func main() {
 	if opts.Flags.Chmod {
 		v("Watching for permission changes.\n")
 		flags |= fsnotify.Chmod
+	}
+
+	if opts.Commands.ScriptAction != "" {
+		opts.Commands.ChmodAction = opts.Commands.ScriptAction
+		opts.Commands.CreateAction = opts.Commands.ScriptAction
+		opts.Commands.DeleteAction = opts.Commands.ScriptAction
+		opts.Commands.RenameAction = opts.Commands.ScriptAction
+		opts.Commands.WriteAction = opts.Commands.ScriptAction
 	}
 
 	watcher, err := fsnotify.NewWatcher()
