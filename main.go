@@ -20,7 +20,7 @@ const (
 
 var opts struct {
 	Verbose bool `short:"v" long:"verbose" description:"Print more details during operation, otherwise remain quiet until an error occurs."`
-	Version bool `short:"V" long:"version" description:"Show program version and exit."`
+	Version bool `short:"V" long:"version" description:"Print program version and exit."`
 	Flags   struct {
 		Create bool `short:"c" long:"create" description:"Watch for new files."`
 		Write  bool `short:"w" long:"write" description:"Watch for changed files."`
