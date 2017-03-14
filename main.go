@@ -11,16 +11,18 @@ import (
 
 const (
 	program = "Sentinel"
-	version = "0.5.0"
 	// ACTION is the environment variable for the type of notification triggered.
 	ACTION = "SENTINEL_ACTION"
 	// PATH is the environment variable for the type of notification triggered.
 	PATH = "SENTINEL_PATH"
 )
 
+// Version is filled in from git tags.
+var Version = "0.0.0"
+
 var opts struct {
 	Verbose bool `short:"v" long:"verbose" description:"Print more details during operation, otherwise remain quiet until an error occurs."`
-	Version bool `short:"V" long:"version" description:"Print program version and exit."`
+	Version bool `short:"V" long:"version" description:"Show program version and exit."`
 	Flags   struct {
 		Create bool `short:"c" long:"create" description:"Watch for new files."`
 		Write  bool `short:"w" long:"write" description:"Watch for changed files."`
@@ -44,6 +46,8 @@ var opts struct {
 	} `positional-args:"yes"`
 }
 
+var done = make(chan bool)
+
 func main() {
 	_, err := flags.Parse(&opts)
 	if err != nil {
@@ -51,7 +55,7 @@ func main() {
 	}
 
 	if opts.Version {
-		pr("%s %s\n", program, version)
+		pr("%s %s\n", program, Version)
 		return
 	}
 
@@ -123,75 +127,7 @@ func main() {
 	}
 	defer watcher.Close()
 
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event := <-watcher.Events:
-				if flags&event.Op&fsnotify.Create == fsnotify.Create {
-					if opts.Commands.CreateAction != "" {
-						v("CREATE: Running '%s'\n", opts.Commands.CreateAction)
-						os.Setenv(ACTION, "create")
-						os.Setenv(PATH, event.Name)
-						runCommand(opts.Commands.CreateAction)
-					}
-					if !opts.Other.Loop {
-						done <- true
-					}
-				}
-				if flags&event.Op&fsnotify.Write == fsnotify.Write {
-					if opts.Commands.WriteAction != "" {
-						v("WRITE: Running '%s'\n", opts.Commands.WriteAction)
-						os.Setenv(ACTION, "write")
-						os.Setenv(PATH, event.Name)
-						runCommand(opts.Commands.WriteAction)
-					}
-					if !opts.Other.Loop {
-						done <- true
-					}
-				}
-				if flags&event.Op&fsnotify.Remove == fsnotify.Remove {
-					if opts.Commands.DeleteAction != "" {
-						v("REMOVE: Running '%s'\n", opts.Commands.DeleteAction)
-						os.Setenv(ACTION, "delete")
-						os.Setenv(PATH, event.Name)
-						runCommand(opts.Commands.DeleteAction)
-					}
-					if !opts.Other.Loop {
-						done <- true
-					}
-				}
-				if flags&event.Op&fsnotify.Rename == fsnotify.Rename {
-					if opts.Commands.RenameAction != "" {
-						v("RENAME: Running '%s'\n", opts.Commands.RenameAction)
-						os.Setenv(ACTION, "rename")
-						os.Setenv(PATH, event.Name)
-						runCommand(opts.Commands.RenameAction)
-					}
-					if !opts.Other.Loop {
-						done <- true
-					}
-				}
-				if flags&event.Op&fsnotify.Chmod == fsnotify.Chmod {
-					if opts.Commands.ChmodAction != "" {
-						v("CHMOD: Running '%s'\n", opts.Commands.ChmodAction)
-						os.Setenv(ACTION, "chmod")
-						os.Setenv(PATH, event.Name)
-						runCommand(opts.Commands.ChmodAction)
-					}
-					if !opts.Other.Loop {
-						done <- true
-					}
-				}
-			case err := <-watcher.Errors:
-				if err.Error() != "" {
-					fatal("Error: ", err.Error())
-				}
-				done <- true
-			}
-		}
-	}()
-
+	watch(watcher, flags)
 	for _, dir := range paths {
 		v("* %s\n", dir)
 		err = watcher.Add(dir)
@@ -202,6 +138,55 @@ func main() {
 
 	// We'll never return from this without a break signal if in loop mode
 	<-done
+}
+
+func watch(watcher *fsnotify.Watcher, flags fsnotify.Op) {
+	go func() {
+		for {
+			select {
+			case event := <-watcher.Events:
+				if flags&event.Op&fsnotify.Create == fsnotify.Create {
+					launch("create", opts.Commands.CreateAction, event)
+				}
+				if flags&event.Op&fsnotify.Write == fsnotify.Write {
+					launch("write", opts.Commands.WriteAction, event)
+				}
+				if flags&event.Op&fsnotify.Remove == fsnotify.Remove {
+					launch("delete", opts.Commands.DeleteAction, event)
+				}
+				if flags&event.Op&fsnotify.Rename == fsnotify.Rename {
+					launch("rename", opts.Commands.RenameAction, event)
+				}
+				if flags&event.Op&fsnotify.Chmod == fsnotify.Chmod {
+					launch("chmod", opts.Commands.ChmodAction, event)
+				}
+			case err := <-watcher.Errors:
+				if err.Error() != "" {
+					fatal("Error: ", err.Error())
+				}
+				done <- true
+			}
+		}
+	}()
+}
+
+func launch(action, cmd string, event fsnotify.Event) {
+	if cmd != "" {
+		var err error
+		v("CHMOD: Running '%s'\n", cmd)
+		err = os.Setenv(ACTION, action)
+		if err != nil {
+			fatal("Couldn't set environment variable: %s", err.Error())
+		}
+		err = os.Setenv(PATH, event.Name)
+		if err != nil {
+			fatal("Couldn't set environment variable: %s", err.Error())
+		}
+		runCommand(cmd)
+	}
+	if !opts.Other.Loop {
+		done <- true
+	}
 }
 
 func runCommand(script string) {
