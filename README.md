@@ -7,7 +7,7 @@ This command-line tool watches one or more directories for files being created, 
 3. [go-flags](https://github.com/jessevdk/go-flags)
 
 ## Build
-Clone the repository and use "go build", and any ldflags etc. you prefer.
+Clone the repository and use "go build", and any ldflags etc. if you prefer. A task for Visual Studio Code is included.
 
 ## Platforms
 Tested on Linux and macOS. Should work on Windows without modification.

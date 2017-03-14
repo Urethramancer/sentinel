@@ -1,0 +1,16 @@
+{
+	"version": "0.1.0",
+	"isShellCommand": true,
+	"command": "./build",
+	"showOutput": "never",
+	"suppressTaskName": true,
+	"tasks": [
+		{
+			"taskName": "build program",
+			"isBuildCommand": true,
+			"args": [
+				""
+			]
+		}
+	]
+}
